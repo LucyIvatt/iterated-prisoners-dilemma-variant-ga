@@ -32,6 +32,10 @@ class Agent():
         else:
             return False
 
+    def change_society(self, agent):
+        '''When given the other players total wealth and society assignment, the agent can decide to switch societies'''
+        # Add code for society switching here
+
     @staticmethod
     def simulate_game(agent1, agent2):
         '''Calculates new total payoff depending on if each agent cooperates or is selfish'''
