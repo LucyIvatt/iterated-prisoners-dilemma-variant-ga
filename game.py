@@ -1,5 +1,10 @@
 from enums import Society
 import random
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+import matplotlib.patches as mpatches
 
 
 class Agent():
@@ -71,6 +76,56 @@ class GlobalModel():
         Agent.simulate_game(agent1, agent2)
 
 
-global_model = GlobalModel(10, random_seed=50)
-for i in range(5):
-    global_model.step()
+model = GlobalModel(25, random_seed=50)
+for i in range(200):
+    model.step()
+
+width = int(math.sqrt(len(model.agents)))
+print(width)
+agent_factions = np.zeros((width, width))
+agent_wealth = np.zeros((width, width))
+
+plt.rcParams.update({'font.size': 16})
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = ['Helvetica']
+
+fig = plt.figure()
+fig.set_size_inches(8, 8)
+fig.set_facecolor('#35455d')
+fig.suptitle("Visualisation of Agent Faction Assignments",
+             size=18, color="white", y=0.96)
+ax = plt.gca()
+
+ax.set_xticklabels([])
+ax.set_yticklabels([])
+ax.tick_params(axis='x', colors='white')
+ax.tick_params(axis='y', colors='white')
+
+x = y = 0
+while y < width:
+    for agent in model.agents:
+        agent_factions[x][y] = agent.society.value
+        agent_wealth[x][y] = agent.total_payoff
+        x += 1
+        if x == width:
+            y += 1
+            x = 0
+
+# Loop over data dimensions and create text annotations.
+for i in range(width):
+    for j in range(width):
+        text = ax.text(j, i, agent_wealth[i, j],
+                       ha="center", va="center", color="black")
+
+colormap = colors.ListedColormap(
+    ["#FF9AA2", "#FFDAC1", "#B5EAD7", "#C7CEEA"])
+plt.imshow(agent_factions, cmap=colormap)
+
+colors = [colormap(i) for i in range(4)]
+labels = ['Saints', 'Buddies', 'Fight Club', 'Vandals']
+# create a patch (proxy artist) for every color
+patches = [mpatches.Patch(color=colors[i], label=labels[i]) for i in range(4)]
+# put those patched as legend-handles into the legend
+plt.legend(handles=patches, loc='upper center', bbox_to_anchor=(0.5, -0.05),
+           fancybox=True, shadow=True, ncol=5)
+plt.show()
