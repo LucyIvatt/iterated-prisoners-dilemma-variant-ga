@@ -12,10 +12,14 @@ class Agent():
         ''' Creates a new agent with a random society assignment and total payoff of 0'''
         self.global_model = model
         self.unique_id = unique_id
+
         self.total_payoff = 0
         self.average_payoff = 0
         self.rounds_played = 0
+
         self.society = random.choice(list(Society))
+        self.history = ''.join(random.choice(
+            ["0", "1", "2", "3"]) for i in range(6))
 
     def __str__(self):
         '''Returns an agents ID, society and total payoff'''
@@ -50,7 +54,11 @@ class Agent():
         if self.total_payoff != 0:
             self.average_payoff = self.total_payoff / self.rounds_played
 
-    @staticmethod
+    def chromosome_index(self):
+        print(self.history)
+        return int(self.history, base=4)
+
+    @ staticmethod
     def simulate_game(agent1, agent2):
         '''Calculates new total payoff depending on if each agent cooperates or is selfish'''
         if agent1.cooperates_with(agent2) and agent2.cooperates_with(agent1):
@@ -78,6 +86,7 @@ class GlobalModel():
 
         for i in range(self.num_agents):
             a = Agent(i, self)
+            print(a.chromosome_index())
             self.agents.append(a)
 
         if not headless:
@@ -102,28 +111,9 @@ class GlobalModel():
                 self.display_fig, self.display_im, self.agents)
 
     def run_simulation(self, n):
-        for agent in self.agents:
-            print(agent)
-        print("----------------")
         for _ in range(n):
             self.step()
-            for agent in self.agents:
-                print(agent)
-            print("----------------")
-            time.sleep(30)
 
 
-model = GlobalModel(25, headless=False, random_seed=50)
-model.run_simulation(2000)
-
-
-# Notes for next time
-# Create a lookup table for the history string comparisons (4^6 if doing memory-3), something like -
-# enumerate(itertools.product(list(Society), repeat=6))
-# will need to switch it so the index isnt the key and is instead the value i.e.
-# for i v, make it v i
-
-# Agent:
-# History (e.g. last 3 games) length 6 - BBVSFB
-# Strategy (Chromosome) - length of 4^6 with evolving outputs for the lookup table (BVFBSFSBFB....)
-# will use index from lookup table to get the gene which relates to the 'learned' choice to switch society
+model = GlobalModel(4, headless=False, random_seed=50)
+model.run_simulation(1)
