@@ -10,6 +10,8 @@ class Agent():
         self.global_model = model
         self.unique_id = unique_id
         self.total_payoff = 0
+        self.average_payoff
+        self.rounds_played = 0
         self.society = random.choice(list(Society))
 
     def __str__(self):
@@ -36,19 +38,26 @@ class Agent():
         '''When given the other players total wealth and society assignment, the agent can decide to switch societies'''
         # Add code for society switching here
 
+    def update_score(value):
+        self.total_payoff += value
+        self.rounds_played += 1
+        if self.total_payoff != 0:
+            self.average_payoff = self.total_payoff / self.rounds_played
+
     @staticmethod
     def simulate_game(agent1, agent2):
         '''Calculates new total payoff depending on if each agent cooperates or is selfish'''
         if agent1.cooperates_with(agent2) and agent2.cooperates_with(agent1):
-            agent1.total_payoff += 4
-            agent2.total_payoff += 4
+            agent_1.update_score(4)
+            agent2.update_score(4)
         elif agent1.cooperates_with(agent2) and not agent2.cooperates_with(agent1):
-            agent2.total_payoff += 6
+            agent_1.update_score(0)
+            agent2.update_score(6)
         elif not agent1.cooperates_with(agent2) and agent2.cooperates_with(agent1):
-            agent1.total_payoff += 6
+            agent_1.update_score(6)
         else:
-            agent1.total_payoff += 1
-            agent2.total_payoff += 1
+            agent1.update_score(1)
+            agent2.update_score(1)
 
 
 class GlobalModel():
