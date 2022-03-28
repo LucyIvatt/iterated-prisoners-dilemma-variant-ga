@@ -6,6 +6,7 @@ import numpy as np
 
 
 def init_figure(agents):
+    plt.ion()
     plt.rcParams.update({'font.size': 16})
     plt.rcParams['font.family'] = 'sans-serif'
     plt.rcParams['font.sans-serif'] = ['Helvetica']
@@ -26,11 +27,11 @@ def init_figure(agents):
     # Loop over data dimensions and create text annotations.
     for i in range(agent_factions.shape[0]):
         for j in range(agent_factions.shape[0]):
-            text = ax.text(j, i, agent_wealth[i, j],
-                           ha="center", va="center", color="black")
+            ax.text(j, i, agent_wealth[i, j],
+                    ha="center", va="center", color="black")
 
     colour_map = ListedColormap(["#FF9AA2", "#FFDAC1", "#B5EAD7", "#C7CEEA"])
-    plt.imshow(agent_factions, cmap=colour_map)
+    im = plt.imshow(agent_factions, cmap=colour_map)
 
     colours = [colour_map(i) for i in range(4)]
     labels = ['Saints', 'Buddies', 'Fight Club', 'Vandals']
@@ -41,12 +42,12 @@ def init_figure(agents):
     plt.legend(handles=patches, loc='upper center', bbox_to_anchor=(0.5, -0.05),
                fancybox=True, shadow=True, ncol=5)
     plt.show()
+    return im, fig, ax
 
 
-def update_figure(new_agents):
-    agent_factions, agent_wealth = create_agents_array(new_agents)
-    h.set_data(img)
-    draw(), pause(1e-3)
+def update_text_labels(ax, agent_wealth):
+    for text in ax.texts:
+        text.set_text(agent_wealth[text._y][text._x])
 
 
 def create_agents_array(agents):

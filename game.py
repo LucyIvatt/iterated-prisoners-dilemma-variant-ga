@@ -1,7 +1,8 @@
 from enums import Society
 import random
 import numpy as np
-from visualisation import init_figure
+from visualisation import init_figure, create_agents_array, update_text_labels
+import time
 
 
 class Agent():
@@ -12,7 +13,7 @@ class Agent():
         self.global_model = model
         self.unique_id = unique_id
         self.total_payoff = 0
-        self.average_payoff
+        self.average_payoff = 0
         self.rounds_played = 0
         self.society = random.choice(list(Society))
 
@@ -39,8 +40,9 @@ class Agent():
     def change_society(self, agent):
         '''When given the other players total wealth and society assignment, the agent can decide to switch societies'''
         # Add code for society switching here
+        self.society = random.choice(list(Society))
 
-    def update_score(value):
+    def update_score(self, value):
         self.total_payoff += value
         self.rounds_played += 1
         if self.total_payoff != 0:
@@ -50,13 +52,13 @@ class Agent():
     def simulate_game(agent1, agent2):
         '''Calculates new total payoff depending on if each agent cooperates or is selfish'''
         if agent1.cooperates_with(agent2) and agent2.cooperates_with(agent1):
-            agent_1.update_score(4)
+            agent1.update_score(4)
             agent2.update_score(4)
         elif agent1.cooperates_with(agent2) and not agent2.cooperates_with(agent1):
-            agent_1.update_score(0)
+            agent1.update_score(0)
             agent2.update_score(6)
         elif not agent1.cooperates_with(agent2) and agent2.cooperates_with(agent1):
-            agent_1.update_score(6)
+            agent1.update_score(6)
         else:
             agent1.update_score(1)
             agent2.update_score(1)
@@ -74,9 +76,6 @@ class GlobalModel():
             a = Agent(i, self)
             self.agents.append(a)
 
-        if not headless:
-            init_figure(self.agents)
-
     def step(self):
         """Advance the model by one step."""
         agent1 = random.choice(self.agents)
@@ -88,7 +87,20 @@ class GlobalModel():
 
         Agent.simulate_game(agent1, agent2)
 
+        agent1.change_society(agent2)
+        agent2.change_society(agent1)
+
 
 model = GlobalModel(25, headless=False, random_seed=50)
+im, fig, ax = init_figure(model.agents)
+update_text_labels(ax, create_agents_array(model.agents)[1])
+fig.canvas.draw()
+fig.canvas.flush_events()
+
 for i in range(200):
+    time.sleep(0.1)
     model.step()
+    im.set_data(create_agents_array(model.agents)[0])
+    update_text_labels(ax, create_agents_array(model.agents)[1])
+    fig.canvas.draw()
+    fig.canvas.flush_events()
