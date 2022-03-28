@@ -39,7 +39,9 @@ class Agent():
 
     def change_society(self, agent):
         '''When given the other players total wealth and society assignment, the agent can decide to switch societies'''
-        # Add code for society switching here
+        # Add code for society switching here, will
+
+        # will access the lookup table to get the index, then use this index to pick the value from the strategy
         self.society = random.choice(list(Society))
 
     def update_score(self, value):
@@ -104,3 +106,15 @@ for i in range(200):
     update_text_labels(ax, create_agents_array(model.agents)[1])
     fig.canvas.draw()
     fig.canvas.flush_events()
+
+
+# Notes for next time
+# Create a lookup table for the history string comparisons (4^6 if doing memory-3), something like -
+    # enumerate(itertools.product(list(Society), repeat=6))
+    # will need to switch it so the index isnt the key and is instead the value i.e.
+    # for i v, make it v i
+
+# Agent:
+# History (e.g. last 3 games) length 6 - BBVSFB
+# Strategy (Chromosome) - length of 4^6 with evolving outputs for the lookup table (BVFBSFSBFB....)
+# will use index from lookup table to get the gene which relates to the 'learned' choice to switch society
