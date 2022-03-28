@@ -1,5 +1,7 @@
 from enums import Society
 import random
+import numpy as np
+from visualisation import init_figure
 
 
 class Agent():
@@ -63,7 +65,7 @@ class Agent():
 class GlobalModel():
     """Global model of the society simulation with N number of agents."""
 
-    def __init__(self, num_agents, random_seed=None):
+    def __init__(self, num_agents, headless=True, random_seed=None):
         self.num_agents = num_agents
         self.agents = []
         random.seed(random_seed)
@@ -71,6 +73,9 @@ class GlobalModel():
         for i in range(self.num_agents):
             a = Agent(i, self)
             self.agents.append(a)
+
+        if not headless:
+            init_figure(self.agents)
 
     def step(self):
         """Advance the model by one step."""
@@ -84,6 +89,6 @@ class GlobalModel():
         Agent.simulate_game(agent1, agent2)
 
 
-global_model = GlobalModel(10, random_seed=50)
-for i in range(5):
-    global_model.step()
+model = GlobalModel(25, headless=False, random_seed=50)
+for i in range(200):
+    model.step()
