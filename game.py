@@ -1,7 +1,7 @@
 from enums import Society
 import random
 import numpy as np
-from visualisation import init_figure, create_agents_array, update_text_labels
+from visualisation import init_visualisation, create_agents_arrays, update_visualisation
 import time
 
 
@@ -70,13 +70,18 @@ class GlobalModel():
     """Global model of the society simulation with N number of agents."""
 
     def __init__(self, num_agents, headless=True, random_seed=None):
+        random.seed(random_seed)
+
         self.num_agents = num_agents
         self.agents = []
-        random.seed(random_seed)
+        self.headless = headless
 
         for i in range(self.num_agents):
             a = Agent(i, self)
             self.agents.append(a)
+
+        if not headless:
+            self.display_fig, self.display_im = init_visualisation(self.agents)
 
     def step(self):
         """Advance the model by one step."""
@@ -92,27 +97,31 @@ class GlobalModel():
         agent1.change_society(agent2)
         agent2.change_society(agent1)
 
+        if not self.headless:
+            update_visualisation(
+                self.display_fig, self.display_im, self.agents)
+
+    def run_simulation(self, n):
+        for agent in self.agents:
+            print(agent)
+        print("----------------")
+        for _ in range(n):
+            self.step()
+            for agent in self.agents:
+                print(agent)
+            print("----------------")
+            time.sleep(30)
+
 
 model = GlobalModel(25, headless=False, random_seed=50)
-im, fig, ax = init_figure(model.agents)
-update_text_labels(ax, create_agents_array(model.agents)[1])
-fig.canvas.draw()
-fig.canvas.flush_events()
-
-for i in range(200):
-    time.sleep(0.1)
-    model.step()
-    im.set_data(create_agents_array(model.agents)[0])
-    update_text_labels(ax, create_agents_array(model.agents)[1])
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+model.run_simulation(2000)
 
 
 # Notes for next time
 # Create a lookup table for the history string comparisons (4^6 if doing memory-3), something like -
-    # enumerate(itertools.product(list(Society), repeat=6))
-    # will need to switch it so the index isnt the key and is instead the value i.e.
-    # for i v, make it v i
+# enumerate(itertools.product(list(Society), repeat=6))
+# will need to switch it so the index isnt the key and is instead the value i.e.
+# for i v, make it v i
 
 # Agent:
 # History (e.g. last 3 games) length 6 - BBVSFB
