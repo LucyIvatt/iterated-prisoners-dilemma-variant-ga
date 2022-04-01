@@ -4,6 +4,8 @@ import numpy as np
 from visualisation import init_visualisation, create_agents_arrays, update_visualisation
 import time
 
+random.seed(50)
+
 
 class Agent():
     '''Represents a single agent within the model with their society assignment and total payoff. '''
@@ -31,7 +33,7 @@ class Agent():
             # Otherwise no cooperation (includes vandals who never cooperate)
             return False
 
-    def change_society(self, agent):
+    def change_society(self):
         '''Uses the base 4 value of the play history to get the index to lookup which society to switch to from the chromosome'''
         index = int(self.history, base=4)
         self.society = self.chromosome[index]
@@ -61,17 +63,10 @@ class Agent():
 class Simulator():
     """Global model of the society simulation with N number of agents."""
 
-    def __init__(self, num_agents, headless=True, random_seed=None):
-        random.seed(random_seed)
+    def __init__(self, agents, headless=True):
 
-        self.num_agents = num_agents
-        self.agents = []
+        self.agents = agents
         self.headless = headless
-
-        for i in range(self.num_agents):
-            a = Agent(i, self)
-            print(a.chromosome_index())
-            self.agents.append(a)
 
         if not headless:
             self.display_fig, self.display_im = init_visualisation(self.agents)
@@ -89,11 +84,21 @@ class Simulator():
             update_visualisation(
                 self.display_fig, self.display_im, self.agents)
 
+        print(f"--------\n{agent1}\n {agent2}\n*plays game*")
         self.play_round(agent1, agent2)
+        print(f"{agent1}\n{agent2}\n--------")
+
+        time.sleep(0.1)
 
     def run(self, n):
         for _ in range(n):
             self.step()
+
+    def reset_agents(self):
+        print("Resetting....")
+        for agent in self.agents:
+            agent.reset()
+            print(agent)
 
     @ staticmethod
     def play_round(agent1, agent2):
@@ -106,6 +111,7 @@ class Simulator():
             agent2.update_score(6)
         elif not agent1.cooperates_with(agent2) and agent2.cooperates_with(agent1):
             agent1.update_score(6)
+            agent2.update_score(0)
         else:
             agent1.update_score(1)
             agent2.update_score(1)
@@ -113,19 +119,10 @@ class Simulator():
         agent1.update_history(agent2)
         agent2.update_history(agent1)
 
-        agent1.change_society(agent2)
-        agent2.change_society(agent1)
+        agent1.change_society()
+        agent2.change_society()
 
 
-# model = Simulation(4, headless=False, random_seed=50)
-# model.run_simulation(1)
-
-genome = [random.choice(list(Society)) for _ in range(4**6)]
-a1 = Agent(1, genome)
-a2 = Agent(2, genome)
-for i in range(5):
-    print(f"{a1}\n{a2}\n-----------------")
-    Simulator.play_round(a1, a2)
-a1.reset()
-a2.reset()
-print(f"{a1}\n{a2}\n-----------------")
+# sim = Simulator(agents, headless=False)
+# sim.run(15)
+# sim.reset_agents()
