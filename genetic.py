@@ -62,7 +62,7 @@ def crossover(chr_1, chr_2):
     return chr_1, chr_2
 
 
-def run_genetic_algorithm(gen_num=200, pop_num=100, round_num=400, mut_prob=0.021, cx_prob=0.15, tourn_size=50, headless=True):
+def run_genetic_algorithm(gen_num=200, pop_num=20, round_num=400, mut_prob=0.021, cx_prob=0.15, tourn_size=5, headless=True):
     logging.info(f"Running initialization")
     start_time = time.time()
     agents = init_population(pop_num)
@@ -83,11 +83,10 @@ def run_genetic_algorithm(gen_num=200, pop_num=100, round_num=400, mut_prob=0.02
         # Performs crossover on 2 individuals based on previously defined probability
         for agent1, agent2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < cx_prob:
-                for agent in offspring:
-                    chr1, chr2 = crossover(
-                        agent1.chromosome, agent2.chromosome)
-                    agent1.chromosome = chr1
-                    agent2.chromosome = chr2
+                chr1, chr2 = crossover(
+                    agent1.chromosome, agent2.chromosome)
+                agent1.chromosome = chr1
+                agent2.chromosome = chr2
 
         # Mutates offspring based on previously defined probability
         offspring = mutate(offspring, mut_prob)
@@ -163,6 +162,6 @@ def load_info():
 
 
 stats, counts = run_genetic_algorithm(
-    gen_num=100, pop_num=2000, round_num=5000, tourn_size=3, cx_prob=0.3, mut_prob=0.02)
+    gen_num=150, pop_num=10000, round_num=5000, tourn_size=500, cx_prob=0.3, mut_prob=0.005)
 save_info(stats, counts)
 load_info()

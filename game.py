@@ -42,7 +42,9 @@ class Agent():
         '''Uses the base 4 value of the play history to get the index to lookup which society to switch to from the chromosome'''
         index = lookup_dict[tuple(self.history)]
         if self.chromosome[index] == 0:
-            self.society = random.choice(list(Society))
+            other_societies = list(Society)
+            other_societies.remove(self.society)
+            self.society = random.choice(other_societies)
 
     def update_score(self, value):
         self.total_payoff += value
