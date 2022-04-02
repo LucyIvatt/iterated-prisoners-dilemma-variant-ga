@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 def init_population(num_agents, test=False):
     agents = []
     for i in range(num_agents):
-        genome = [random.choice(list(Society)) for _ in range(4**6)]
+        genome = [random.choice([0, 1]) for _ in range(4**4)]
         agents.append(Agent(i, genome))
     return agents
 
@@ -38,10 +38,10 @@ def selection(agents, pop_size, tourn_size):
     offspring = [copy.deepcopy(a) for a in offspring]
 
     # Resets the ID to be between 0 and pop_size
-    # id = 0
-    # for agent in offspring:
-    #     agent.unique_id = id
-    #     id += 1
+    id = 0
+    for agent in offspring:
+        agent.unique_id = id
+        id += 1
 
     return offspring
 
@@ -57,18 +57,8 @@ def mutate(agents, indpb):
 
 
 def crossover(chr_1, chr_2):
-    chr_len = min(len(chr_1), len(chr_2))
-
-    # Picks the two random crossover points
-    cx_1 = random.randint(1, chr_len)
-    cx_2 = random.randint(1, chr_len-1)
-
-    if cx_2 >= cx_1:
-        cx_2 += 1
-    else:
-        cx_1, cx_2 = cx_2, cx_1
-    chr_1[cx_1:cx_2], chr_2[cx_1:cx_2] = chr_2[cx_1:cx_2], chr_1[cx_1:cx_2]
-
+    cxpoint = random.randint(1, len(chr_1) - 1)
+    chr_1[cxpoint:], chr_2[cxpoint:] = chr_2[cxpoint:], chr_1[cxpoint:]
     return chr_1, chr_2
 
 
@@ -78,6 +68,7 @@ def run_genetic_algorithm(gen_num=200, pop_num=100, round_num=400, mut_prob=0.02
     agents = init_population(pop_num)
     simulator = Simulator(agents, headless)
     stats = {}
+    counts = {}
 
     simulator.run(round_num)
     logging.info(f"Took {(time.time() - start_time)} seconds")
@@ -106,16 +97,16 @@ def run_genetic_algorithm(gen_num=200, pop_num=100, round_num=400, mut_prob=0.02
 
         simulator.run(round_num)
         stats[g] = simulator.get_stats()
+        counts[g] = simulator.get_counts()
 
-        x = [agent.society for agent in simulator.agents]
-
-        logging.info(f"{Counter(x)}")
+        logging.info(simulator.get_stats())
+        logging.info(simulator.get_counts())
         logging.info(f"Took {(time.time() - start_time)} seconds")
 
-    return stats
+    return stats, counts
 
 
-def save_info(stats):
+def save_info(stats, counts):
     root_folder = "sim-outputs//"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
@@ -124,12 +115,19 @@ def save_info(stats):
     pickle.dump(stats, stats_file)
     stats_file.close()
 
+    counts_file = open(root_folder + "//" + "counts" + ".pkl", "wb")
+    pickle.dump(counts, counts_file)
+    counts_file.close()
+
 
 def load_info():
     root_folder = "sim-outputs//"
     stats_file = open(root_folder + "//" + "stats" + ".pkl", "rb")
+    counts_file = open(root_folder + "//" + "counts" + ".pkl", "rb")
     stats = pickle.load(stats_file)
+    counts = pickle.load(counts_file)
     stats_file.close()
+    counts_file.close()
 
     means = []
     maxes = []
@@ -140,13 +138,31 @@ def load_info():
         means.append(value["mean"])
         maxes.append(value["max"])
 
-    plt.plot(gens, means, lw=3, color="red")
-    plt.plot(gens, maxes, lw=1, color="blue")
+    s_counts, b_counts, f_counts, v_counts = ([] for _ in range(4))
+
+    for key, value in counts.items():
+        s_counts.append(value[Society.SAINTS])
+        b_counts.append(value[Society.BUDDIES])
+        f_counts.append(value[Society.FIGHT_CLUB])
+        v_counts.append(value[Society.VANDALS])
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.set_size_inches(10, 8)
+    fig.suptitle("Society Based Cooperation")
+
+    ax1.set_title("Fitness Stats")
+    ax1.plot(gens, means, lw=3, color="red")
+
+    ax2.set_title("Assignment Counts")
+    ax2.plot(gens, s_counts, lw=2, color="green")
+    ax2.plot(gens, b_counts, lw=2, color="lightblue")
+    ax2.plot(gens, f_counts, lw=2, color="orange")
+    ax2.plot(gens, v_counts, lw=2, color="red")
 
     plt.show()
 
 
-stats = run_genetic_algorithm(
-    gen_num=100, pop_num=10000, round_num=5000, tourn_size=2000, cx_prob=0.3, mut_prob=0.001)
-save_info(stats)
+stats, counts = run_genetic_algorithm(
+    gen_num=100, pop_num=2000, round_num=5000, tourn_size=3, cx_prob=0.3, mut_prob=0.02)
+save_info(stats, counts)
 load_info()

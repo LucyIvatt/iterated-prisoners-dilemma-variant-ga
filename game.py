@@ -4,9 +4,12 @@ import numpy as np
 from visualisation import init_visualisation, create_agents_arrays, update_visualisation
 import time
 from statistics import median
+from collections import Counter
+import itertools
 import logging
 
-random.seed(50)
+lookup_dict = {y: x for x, y in dict(
+    enumerate(itertools.product(["S", "B", "F", "V"], repeat=4))).items()}
 
 
 class Agent():
@@ -37,19 +40,20 @@ class Agent():
 
     def change_society(self):
         '''Uses the base 4 value of the play history to get the index to lookup which society to switch to from the chromosome'''
-        index = int(self.history, base=4)
-        self.society = self.chromosome[index]
+        index = lookup_dict[tuple(self.history)]
+        if self.chromosome[index] == 0:
+            self.society = random.choice(list(Society))
 
     def update_score(self, value):
         self.total_payoff += value
         self.rounds_played += 1
 
     def update_history(self, opponent):
-        new_match = f"{self.society.value}{opponent.society.value}"
-        self.history = self.history[2:6] + new_match
+        new_match = [self.society.value, opponent.society.value]
+        self.history = self.history[2:4] + new_match
 
     def fitness(self):
-        if self.total_payoff != 0:
+        if self.rounds_played != 0:
             return self.total_payoff / self.rounds_played
         else:
             return 0
@@ -58,8 +62,7 @@ class Agent():
         self.total_payoff = 0
         self.rounds_played = 0
         self.society = random.choice(list(Society))
-        self.history = ''.join(random.choice(
-            ["0", "1", "2", "3"]) for i in range(6))
+        self.history = [random.choice(["S", "B", "F", "V"]) for i in range(4)]
 
 
 class Simulator():
@@ -69,7 +72,6 @@ class Simulator():
 
         self.agents = agents
         self.headless = headless
-
         if not headless:
             self.display_fig, self.display_im = init_visualisation(self.agents)
 
@@ -106,7 +108,11 @@ class Simulator():
         min_fitness = min(agent_fitnesses)
         median_fitness = median(agent_fitnesses)
 
-        return {"min": max_fitness, "mean": mean_fitness, "median": median_fitness, "max": max_fitness}
+        return {"min": min_fitness, "mean": mean_fitness, "median": median_fitness, "max": max_fitness}
+
+    def get_counts(self):
+        assignments = [agent.society for agent in self.agents]
+        return Counter(assignments)
 
     @ staticmethod
     def play_round(agent1, agent2):
