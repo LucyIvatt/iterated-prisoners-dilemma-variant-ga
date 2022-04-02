@@ -95,4 +95,4 @@ def update_visualisation(fig, im, agents):
     fig.canvas.flush_events()
 
     # Adds waiting time before next module step
-    time.sleep(0.001)
+    time.sleep(0.05)

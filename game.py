@@ -3,6 +3,8 @@ import random
 import numpy as np
 from visualisation import init_visualisation, create_agents_arrays, update_visualisation
 import time
+from statistics import median
+import logging
 
 random.seed(50)
 
@@ -18,7 +20,7 @@ class Agent():
 
     def __str__(self):
         '''Returns an agents ID, society and total payoff'''
-        return f"Agent {self.unique_id} - ({self.society.name=}, {self.total_payoff=}, {self.rounds_played=}, {self.history=})"
+        return f"Agent {self.unique_id} - ({self.society.name=}, {self.total_payoff=}, {self.rounds_played=}, {self.history=}, {self.fitness()=}\n{self.chromosome[:10]})"
 
     def cooperates_with(self, agent):
         '''Determines if the agent will cooperate with a specified agent depending on both of their society assignments'''
@@ -84,21 +86,27 @@ class Simulator():
             update_visualisation(
                 self.display_fig, self.display_im, self.agents)
 
-        print(f"--------\n{agent1}\n {agent2}\n*plays game*")
         self.play_round(agent1, agent2)
-        print(f"{agent1}\n{agent2}\n--------")
 
-        time.sleep(0.1)
+        if not self.headless:
+            time.sleep(0.05)
 
     def run(self, n):
-        for _ in range(n):
+        for i in range(n):
             self.step()
 
     def reset_agents(self):
-        print("Resetting....")
         for agent in self.agents:
             agent.reset()
-            print(agent)
+
+    def get_stats(self):
+        agent_fitnesses = [agent.fitness() for agent in self.agents]
+        max_fitness = max(agent_fitnesses)
+        mean_fitness = sum(agent_fitnesses) / len(agent_fitnesses)
+        min_fitness = min(agent_fitnesses)
+        median_fitness = median(agent_fitnesses)
+
+        return {"min": max_fitness, "mean": mean_fitness, "median": median_fitness, "max": max_fitness}
 
     @ staticmethod
     def play_round(agent1, agent2):
@@ -121,8 +129,3 @@ class Simulator():
 
         agent1.change_society()
         agent2.change_society()
-
-
-# sim = Simulator(agents, headless=False)
-# sim.run(15)
-# sim.reset_agents()
