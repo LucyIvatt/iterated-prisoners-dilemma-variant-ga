@@ -17,10 +17,7 @@ logging.basicConfig(level=logging.INFO)
 def init_population(num_agents, test=False):
     agents = []
     for i in range(num_agents):
-        if not test:
-            genome = [random.choice(list(Society)) for _ in range(4**6)]
-        else:
-            genome = [random.choice(list(Society)) for _ in range(8)]
+        genome = [random.choice(list(Society)) for _ in range(4**6)]
         agents.append(Agent(i, genome))
     return agents
 
@@ -150,6 +147,6 @@ def load_info():
 
 
 stats = run_genetic_algorithm(
-    gen_num=150, pop_num=1500, round_num=5000, tourn_size=300, cx_prob=0.3, mut_prob=0.001)
+    gen_num=100, pop_num=10000, round_num=5000, tourn_size=2000, cx_prob=0.3, mut_prob=0.001)
 save_info(stats)
 load_info()
