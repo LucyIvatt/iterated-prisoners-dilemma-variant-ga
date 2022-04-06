@@ -9,7 +9,7 @@ import itertools
 import logging
 
 lookup_dict = {y: x for x, y in dict(
-    enumerate(itertools.product(["S", "B", "F", "V"], repeat=4))).items()}
+    enumerate(itertools.product(["S", "B", "F", "V"], repeat=2))).items()}
 
 
 class Agent():
@@ -52,7 +52,7 @@ class Agent():
 
     def update_history(self, opponent):
         new_match = [self.society.value, opponent.society.value]
-        self.history = self.history[2:4] + new_match
+        self.history = new_match
 
     def fitness(self):
         if self.rounds_played != 0:
@@ -64,7 +64,7 @@ class Agent():
         self.total_payoff = 0
         self.rounds_played = 0
         self.society = random.choice(list(Society))
-        self.history = [random.choice(["S", "B", "F", "V"]) for i in range(4)]
+        self.history = [random.choice(["S", "B", "F", "V"]) for i in range(2)]
 
 
 class Simulator():
